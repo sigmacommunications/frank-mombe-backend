@@ -17,24 +17,24 @@ class AdminUserSeeder extends Seeder
      */
     public function run()
     {
-        // User::create([
-        //     'first_name' => 'Frank-mombe',
-        //     'last_name' => 'Admin',
-        //     'email' => 'admin@gmail.com',
-        //     'password' => bcrypt('admin'),
-        //     'role' => 'admin',
-        //     'created_at'=>\Carbon\Carbon::now(),
-        //     'updated_at'=>\Carbon\Carbon::now(),
+        User::create([
+            'first_name' => 'Frank-mombe',
+            'last_name' => 'Admin',
+            'email' => 'admin@gmail.com',
+            'password' => bcrypt('1234678'),
+            'role' => 'admin',
+            'created_at'=>\Carbon\Carbon::now(),
+            'updated_at'=>\Carbon\Carbon::now(),
 
-        // ]);
-        
+        ]);
+
         $questions = [
             'Do u have car parking area?',
             'Do u have cafeteria',
             'Do u have airconditiner ambience',
             'Do you have security surveillance?'
         ];
-        
+
         foreach($questions as $key => $value)
         {
             Questions::create([
@@ -43,7 +43,7 @@ class AdminUserSeeder extends Seeder
                 'updated_at'=>\Carbon\Carbon::now(),
             ]);
         }
-        
+
         $services = [
             'Blow dry',
             'Blow dry with curling and striaght iron',
@@ -58,7 +58,7 @@ class AdminUserSeeder extends Seeder
             'Acrylic fill',
             'partial highlight',
         ];
-        
+
         foreach($services as $key => $value)
         {
             Service::create([
@@ -67,8 +67,8 @@ class AdminUserSeeder extends Seeder
                 'updated_at'=>\Carbon\Carbon::now(),
             ]);
         }
-        
-        
-        
+
+
+
     }
 }
