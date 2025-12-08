@@ -25,7 +25,7 @@ return new class extends Migration
             $table->string('image')->nullable();
             $table->string('custom_location')->nullable();
             $table->string('status', 10);
-            $table->json('additional_customers')->nullable()->after('status');
+            $table->json('additional_customers')->nullable();
             $table->timestamps();
         });
     }
