@@ -30,6 +30,7 @@ return new class extends Migration
             $table->string('travel_date_to')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->string('photo')->nullable();
             $table->enum('role',['customer','barber','admin'])->default('customer');
             $table->enum('status',['active','inactive'])->default('active');
             $table->rememberToken();
