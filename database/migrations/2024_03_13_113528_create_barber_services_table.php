@@ -15,10 +15,10 @@ return new class extends Migration
     {
         Schema::create('barber_services', function (Blueprint $table) {
             $table->id();
-            $table->string('user_id')->nullable();
-            $table->string('service_id')->nullable();
-            $table->string('price')->nullable();
-            $table->string('main_service')->nullable();
+            $table->integer('user_id')->nullable();
+            $table->integer('service_id')->nullable();
+            $table->integer('price')->nullable();
+            $table->integer('main_service')->nullable();
             $table->timestamps();
         });
     }

@@ -23,9 +23,9 @@ return new class extends Migration
             $table->string('location')->nullable();
             $table->string('lat')->nullable();
             $table->string('lng')->nullable();
-            $table->string('travel_mode')->nullable();
-            $table->string('holiday_mode')->nullable();
-            $table->string('rush_service')->nullable();
+            $table->tinyInteger('travel_mode')->default(0)->nullable();
+            $table->tinyInteger('holiday_mode')->nullable();
+            $table->tinyInteger('rush_service')->nullable();
             $table->string('travel_date_from')->nullable();
             $table->string('travel_date_to')->nullable();
             $table->timestamp('email_verified_at')->nullable();

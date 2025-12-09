@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('code')->nullable();
             $table->string('type')->nullable();
             $table->string('value')->nullable();
-			$table->string('min_price')->nullable();
+			$table->integer('min_price')->nullable();
             $table->string('status')->nullable();
             $table->timestamps();
         });

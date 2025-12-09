@@ -15,7 +15,7 @@ return new class extends Migration
     {
         Schema::create('service_timings', function (Blueprint $table) {
             $table->id();
-            $table->string('barber_id');
+            $table->integer('barber_id');
             $table->string('time');
             $table->string('status', 10);
             $table->timestamps();

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('booking_id');            
             $table->string('name')->nullable();
-            $table->string('service')->nullable();
+            $table->integer('service_id')->nullable();
             $table->string('any_allergies')->nullable();
             $table->string('add_ons')->nullable();
             $table->string('reference_image')->nullable();

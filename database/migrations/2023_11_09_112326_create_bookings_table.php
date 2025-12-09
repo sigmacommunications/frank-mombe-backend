@@ -15,16 +15,16 @@ return new class extends Migration
     {
         Schema::create('bookings', function (Blueprint $table) {
             $table->id();
-            $table->string('member_id')->nullable();
-            $table->string('barber_id')->nullable();
-            $table->string('booking_time')->nullable();
-            $table->string('booking_date')->nullable();
-            $table->string('price')->nullable();
-            $table->string('dis_price')->nullable();
-            $table->string('total_price')->nullable();
-            $table->string('image')->nullable();
-            $table->string('custom_location')->nullable();
-            $table->string('status', 10);
+            $table->integer('member_id');
+            $table->integer('barber_id');
+            $table->string('booking_time');
+            $table->string('booking_date');
+            $table->integer('price')->nullable();
+            $table->integer('dis_price')->default(0);
+            $table->integer('total_price')->default(0);
+            $table->text('image');
+            $table->text('custom_location')->nullable();
+            $table->string('status', 100);
             $table->json('additional_customers')->nullable();
             $table->timestamps();
         });
