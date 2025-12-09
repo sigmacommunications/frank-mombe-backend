@@ -21,6 +21,7 @@ class AdminUserSeeder extends Seeder
             'first_name' => 'Frank-mombe',
             'last_name' => 'Admin',
             'email' => 'admin@gmail.com',
+            'phone' => '1234567890',
             'password' => bcrypt('1234678'),
             'role' => 'admin',
             'created_at'=>\Carbon\Carbon::now(),
