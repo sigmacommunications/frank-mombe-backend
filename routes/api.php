@@ -29,7 +29,7 @@ Route::post('register', [\App\Http\Controllers\Api\RegisterController::class, 'r
 Route::get('noauth', [\App\Http\Controllers\Api\RegisterController::class, 'noauth'])->name('noauth');
 
 
-Route::any('login', [\App\Http\Controllers\Api\RegisterController::class, 'login'])->name('login');
+Route::any('login', [\App\Http\Controllers\Api\RegisterController::class, 'login']);
 Route::any('verify', [\App\Http\Controllers\Api\RegisterController::class, 'verify']);
 Route::post('password/email',  [\App\Http\Controllers\Api\ForgotPasswordController::class,'forget']);
 Route::any('password/reset', [\App\Http\Controllers\Api\CodeCheckController::class,'index']);
@@ -63,7 +63,7 @@ Route::group(['middleware' => ['api','auth:api'], 'prefix' => 'auth'], function 
     Route::get('service',[App\Http\Controllers\Api\Barber\ServiceController::class,'service_list']);
     Route::get('question', [\App\Http\Controllers\Api\SupportController::class, 'questions']);
     Route::post('question-answer', [\App\Http\Controllers\Api\SupportController::class, 'question_answer']);
-    
+
     Route::post('wishlist', [\App\Http\Controllers\Api\WishlistController::class, 'wishlist']);
     Route::get('wishlist', [\App\Http\Controllers\Api\WishlistController::class, 'wishlist_get']);
     Route::get('coupon', [\App\Http\Controllers\Api\CouponController::class, 'index']);
@@ -88,9 +88,9 @@ Route::group(['middleware' => ['api','auth:api'], 'prefix' => 'auth'], function 
     // Route::get('service/list', [\App\Http\Controllers\Api\ServiceTimingController::class, 'service_list']);
     Route::post('addcard', [\App\Http\Controllers\UserCardController::class, 'addcard']);
 	Route::post('updatecard', [\App\Http\Controllers\UserCardController::class, 'updatecard']);
-	
+
 	Route::post('buy_credits', [\App\Http\Controllers\TranasactionController::class, 'buy_credits']);
-	
+
 	Route::get('transaction', [\App\Http\Controllers\TranasactionController::class, 'index']);
 	Route::post('transaction', [\App\Http\Controllers\TranasactionController::class, 'store']);
 });

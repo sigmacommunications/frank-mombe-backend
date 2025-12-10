@@ -16,8 +16,8 @@ use Illuminate\Support\Facades\Route;
 Route::get('/task', [App\Console\Commands\RecurringPayment::class, 'handle'])->name('handle');
 
 
-// Route::get('/', [App\Http\Controllers\Auth\LoginController::class, 'login'])->name('login');
-// Route::get('/login', [App\Http\Controllers\Auth\LoginController::class, 'login'])->name('home_login');
+Route::get('/', [App\Http\Controllers\Auth\LoginController::class, 'login'])->name('login');
+Route::get('/login', [App\Http\Controllers\Auth\LoginController::class, 'login'])->name('home_login');
 Route::get('/admin', [App\Http\Controllers\Auth\LoginController::class, 'login'])->name('admin');
 Route::post('/adminpost', [App\Http\Controllers\Auth\LoginController::class, 'admin'])->name('admin_post');
 
