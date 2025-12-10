@@ -11,6 +11,7 @@ use App\Http\Controllers\Controller;
 use App\Models\BookingDetail;
 use App\Models\Tranasaction;
 use Illuminate\Http\Request;
+use Log;
 use Validator;
 use Auth;
 use Stripe;
@@ -65,12 +66,12 @@ class BookingController extends BaseController
 				$file->move('uploads/bookings/', $fileName);
 				$profile = asset('uploads/bookings/'.$fileName);
 			}
-			
+
 			$orderNumber = $this->generateOrderNumber();
             // $input = $request->except(['_token'],$request->all());
 
             $total = $request->input('price') - $request->input('dis_price');
-            
+
             if($request->payment_method == 'stripe')
             {
                 Stripe\Stripe::setApiKey(env('STRIPE_SECRET'));
@@ -81,7 +82,7 @@ class BookingController extends BaseController
                         "source" => $request->stripeToken,
                         "description" => "Test payment from Frank Mombe Application"
                 ]);
-                
+
                 $data = Tranasaction::create([
                         'user_id' => Auth::user()->id,
                         'amount' => $total,
@@ -92,7 +93,7 @@ class BookingController extends BaseController
                         //'status' => 'Pending',
                     ]);
 
-    
+
                     $data = Booking::create([
                         'member_id' => Auth::user()->id,
                         'barber_id' => $request->input('barber_id'),
@@ -107,7 +108,7 @@ class BookingController extends BaseController
                         'status' => 'pending',
 						'order_no' => $orderNumber,
                     ]);
-        
+
                     foreach($request->service_id as $service)
                     {
                         BookingDetail::create([
@@ -136,10 +137,10 @@ class BookingController extends BaseController
                         //'pm_id' => $customer->id,
                         //'status' => 'Pending',
                     ]);
-    
+
                     $wallet->amount = $wallet->amount - $total;
                     $wallet->save();
-    
+
                     $data = Booking::create([
                         'member_id' => Auth::user()->id,
                         'barber_id' => $request->input('barber_id'),
@@ -154,7 +155,7 @@ class BookingController extends BaseController
                         'status' => 'pending',
 						'order_no' => $orderNumber,
                     ]);
-        
+
                     foreach($request->service_id as $service)
                     {
                         BookingDetail::create([
@@ -173,7 +174,7 @@ class BookingController extends BaseController
             return response()->json(['success'=>false,'message'=>$e->getMessage()]);
         }
     }
-    public function bookinggroup(Request $request) 
+    public function bookinggroup(Request $request)
     {
         try {
             $validator = Validator::make($request->all(), [
@@ -206,7 +207,7 @@ class BookingController extends BaseController
 
             $fileName = [];
             $profile = '';
-            
+
             if($request->hasFile('image')) {
                 $file = request()->file('image');
                 $fileName = md5($file->getClientOriginalName() . time()) . "PayMefirst." . $file->getClientOriginalExtension();
@@ -235,14 +236,14 @@ class BookingController extends BaseController
                 ]);
 
                 $bookingData = $this->createGroupBooking($request, $profile, $orderNumber, $total);
-                
+
                 $user = User::with('wallet','temporary_address')->find(Auth::user()->id);
                 return response()->json(['success'=>true,'message'=>'Your Group Booking has been Sent','user_info'=>$user]);
             }
 
             if($request->payment_method == 'wallet') {
                 $wallet = Wallet::where('user_id', Auth::user()->id)->first();
-                
+
                 if(!$wallet || $wallet->amount < $total) {
                     return response()->json(['success'=>false,'message'=>'Insufficient credits please buy some & order again']);
                 }
@@ -258,14 +259,14 @@ class BookingController extends BaseController
                 $wallet->save();
 
                 $bookingData = $this->createGroupBooking($request, $profile, $orderNumber, $total);
-                
+
                 $user = User::with('wallet','temporary_address')->find(Auth::user()->id);
                 return response()->json(['success'=>true,'message'=>'Your Group Booking has been Sent','user_info'=>$user]);
             }
 
             // If no payment method specified, just create the booking
             $bookingData = $this->createGroupBooking($request, $profile, $orderNumber, $total);
-            
+
             $user = User::with('wallet','temporary_address')->find(Auth::user()->id);
             return response()->json(['success'=>true,'message'=>'Your Group Booking has been Sent','user_info'=>$user]);
 
@@ -274,7 +275,7 @@ class BookingController extends BaseController
         }
     }
 
-    private function createGroupBooking($request, $profile, $orderNumber, $total) 
+    private function createGroupBooking($request, $profile, $orderNumber, $total)
     {
         // Create main booking record
         $booking = Booking::create([
@@ -328,7 +329,7 @@ class BookingController extends BaseController
 
         return $booking;
     }
-	
+
 	private function generateOrderNumber()
 	{
 		$prefix = 'FM'; // Frank Mombe prefix
@@ -345,9 +346,10 @@ class BookingController extends BaseController
 
 		return $orderNumber;
 	}
-    
+
 	public function booking_list(Request $request)
     {
+        // dd($request->all());
         if($request->status != 'all')
         {
             $data = Booking::with('review','barber_info','booking_detail','booking_detail.service_info','member_info')->where('status',$request->status)->where('member_id', Auth::user()->id)->get();
@@ -356,9 +358,10 @@ class BookingController extends BaseController
         {
             $data = Booking::with('review','barber_info','booking_detail', 'booking_detail.service_info','member_info')->where('member_id',Auth::user()->id)->get();
         }
+        // Log::info("Booking List: " . json_encode($data));
         return $this->sendResponse($data,'Booking List');
     }
-	
+
     public function cancel_booking($id)
     {
         $booking = Booking::find($id);

@@ -13,6 +13,7 @@ use App\Models\Questions;
 use App\Models\QueAnswer;
 use App\Models\BarberService;
 use Auth;
+use Log;
 use Validator;
 
 class ServiceController extends BaseController
@@ -24,10 +25,10 @@ class ServiceController extends BaseController
      */
     public function index()
     {
-        $service = BarberService::with('service_info')->where('user_id',Auth::user()->id)->get();
-        return $this->sendResponse($service,'Service Lists');
+        $service = BarberService::with('service_info')->where('user_id', Auth::user()->id)->get();
+        return $this->sendResponse($service, 'Service Lists');
     }
-    
+
     public function service_list(Request $request)
     {
 
@@ -36,7 +37,7 @@ class ServiceController extends BaseController
         // Search functionality
         if ($request->has('search') && $request->search != '') {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%$search%")
                     ->orWhere('type', 'like', "%$search%");
             });
@@ -50,15 +51,15 @@ class ServiceController extends BaseController
                     break;
                 case 'sub':
                     $query->whereNotNull('parent_id')
-                            ->whereHas('parent', function($q) {
-                                $q->whereNull('parent_id');
-                            });
+                        ->whereHas('parent', function ($q) {
+                            $q->whereNull('parent_id');
+                        });
                     break;
                 case 'child':
                     $query->whereNotNull('parent_id')
-                            ->whereHas('parent', function($q) {
-                                $q->whereNotNull('parent_id');
-                            });
+                        ->whereHas('parent', function ($q) {
+                            $q->whereNotNull('parent_id');
+                        });
                     break;
             }
         }
@@ -69,7 +70,7 @@ class ServiceController extends BaseController
         }
 
         $categories = $query->orderBy('sort_order')->orderBy('name')->paginate(20);
-        return $this->sendResponse($categories,'Service Lists');
+        return $this->sendResponse($categories, 'Service Lists');
     }
 
     /**
@@ -90,28 +91,26 @@ class ServiceController extends BaseController
      */
     public function store(Request $request)
     {
-        
+
         // return Auth::user()->id;
         // return $request->all();die;
-        $validate = Validator::make($request->all(),[
+        $validate = Validator::make($request->all(), [
 
             //'service_name' => 'required',
             // 'price' => 'required',
             // 'price' => 'required',
         ]);
 
-        if($validate->fails())
-        {
-		    return $this->sendError($validate->errors()->first());
+        if ($validate->fails()) {
+            return $this->sendError($validate->errors()->first());
         }
         //BarberService::where('user_id',Auth::user()->id)->delete();
-        
-        foreach($request->service_name as $key => $service)
-        {
+
+        foreach ($request->service_name as $key => $service) {
             // check if service already exist for this user
             $exists = BarberService::where('user_id', Auth::user()->id)
-                        ->where('service_id', $service['service_id'])
-                        ->exists();
+                ->where('service_id', $service['service_id'])
+                ->exists();
 
             if ($exists) {
                 // skip this service (do not insert again)
@@ -128,19 +127,19 @@ class ServiceController extends BaseController
                 'user_id' => Auth::user()->id,
             ]);
         }
-        
+
         // $services = BarberService::with('service_info')->where('user_id',Auth::user()->id)->get();
-        $users = User::with('services','services.service_info','wallet','temporary_address')->find(Auth::user()->id);
+        $users = User::with('services', 'services.service_info', 'wallet', 'temporary_address')->find(Auth::user()->id);
         $totalQuestions = Questions::count();
-        $answeredQuestions = QueAnswer::where('user_id',$users->id)->count();
-        
+        $answeredQuestions = QueAnswer::where('user_id', $users->id)->count();
+
         if ($answeredQuestions < $totalQuestions) {
             $users->complete_questions = 'No';
         } else {
             $users->complete_questions = 'Yes';//QueAnswer::where('user_id',$user->id)->get();
         }
 
-        return $this->sendResponse($users , 'Service Create Successfully');
+        return $this->sendResponse($users, 'Service Create Successfully');
     }
 
     /**
@@ -181,7 +180,7 @@ class ServiceController extends BaseController
             'price' => 'required'
         ]);
 
-        if($validator->fails()){
+        if ($validator->fails()) {
             return $this->sendError('Validation Error.', $validator->errors());
         }
 
@@ -194,7 +193,7 @@ class ServiceController extends BaseController
     }
     public function status_update(Request $request, $id)
     {
-         $booking = Booking::find($id);
+        $booking = Booking::find($id);
         $booking->update([
             'status' => $request->get('status'),
         ]);
@@ -234,29 +233,27 @@ class ServiceController extends BaseController
         $query = Booking::with([
             'review',
             'barber_info',
-           // 'booking_detail',
+            // 'booking_detail',
             //'booking_detail.service_info',
             'member_info',
             'group_members',
             'group_members.service_info',
         ]);
-        
+
         // Status filter
-        if(isset($request->status))
-        {
+        if (isset($request->status)) {
             $query->where('status', $request->status);
         }
-        
+
         // Booking type filter (single/group)
-        if(isset($request->booking_type))
-        {
+        if (isset($request->booking_type)) {
             $query->where('booking_type', $request->booking_type);
         }
-        
+
         $barberbooking = $query->where('barber_id', Auth::user()->id)
-                            ->orderBy('created_at', 'desc')
-                            ->get();
-        
-        return response()->json(['success'=>true,'barber_booking_list'=> $barberbooking],200);
+            ->orderBy('created_at', 'desc')
+            ->get();
+        Log::info("Barber Booking List: " . json_encode($barberbooking));
+        return response()->json(['success' => true, 'barber_booking_list' => $barberbooking], 200);
     }
 }

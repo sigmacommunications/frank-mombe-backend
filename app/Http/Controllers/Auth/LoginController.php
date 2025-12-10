@@ -48,91 +48,91 @@ class LoginController extends Controller
     {
         return view('auth.login');
     }
-	
-	
-	public function sendOtpToVerifyEmail(Request $request)
-	{
-		$validator = Validator::make($request->all(), [
-			'email' => 'required|email|exists:users,email',
-		]);
-		if ($validator->fails()) 
-		{
-        	return redirect()->back()
-            ->withErrors($validator) // Add validation errors to session
-            ->withInput();
-    	}
 
-		$user = User::where('email', $request->email)->first();
 
-		// Generate and save OTP
-		$otp = rand(100000, 999999); // 6-digit OTP
-		$user->email_code = $otp;
-		$user->save();
+    public function sendOtpToVerifyEmail(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email|exists:users,email',
+        ]);
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator) // Add validation errors to session
+                ->withInput();
+        }
 
-		// Send OTP via email
-		Mail::raw("Your verification code is: $otp", function ($message) use ($user) {
-			$message->to($user->email)
-				->subject('Email Verification OTP');
-		});
+        $user = User::where('email', $request->email)->first();
+        if (!$user) {
+            return redirect()->back()->withErrors(['email' => 'User not found.']);
+        }
+        // Generate and save OTP
+        $otp = rand(100000, 999999); // 6-digit OTP
+        $user->email_code = $otp;
+        $user->save();
 
-		// Set session flag
-		session(['otp_sent' => true, 'email' => $user->email]);
+        // Send OTP via email
+        Mail::raw("Your verification code is: $otp", function ($message) use ($user) {
+            $message->to($user->email)
+                ->subject('Email Verification OTP');
+        });
 
-		return redirect()->back()->with('success', 'OTP sent to your email.');
-	}
-	
-	public function verifyOtpAndDeleteUser(Request $request)
-	{
-		$validator = Validator::make($request->all(), [
-			'email' => 'required|email|exists:users,email',
-			'otp' => 'required|digits:6',
-		]);
+        // Set session flag
+        session(['otp_sent' => true, 'email' => $user->email]);
 
-		if ($validator->fails()) {
-			return redirect()->back()
-				->withErrors($validator)
-				->withInput();
-		}
+        return redirect()->back()->with('success', 'OTP sent to your email.');
+    }
 
-		$user = User::where('email', $request->email)
-			->where('email_code', $request->otp)
-			->first();
+    public function verifyOtpAndDeleteUser(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email|exists:users,email',
+            'otp' => 'required|digits:6',
+        ]);
 
-		if (!$user) {
-			return redirect()->back()->with('error', 'Invalid OTP.');
-		}
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
 
-		// Soft delete the user
-		$user->delete();
+        $user = User::where('email', $request->email)
+            ->where('email_code', $request->otp)
+            ->first();
 
-		// Clear session
-		session()->forget(['otp_sent', 'email']);
+        if (!$user) {
+            return redirect()->back()->with('error', 'Invalid OTP.');
+        }
 
-		return redirect()->back()->with('success', 'Account has been deleted.');
-	}
+        // Soft delete the user
+        $user->delete();
+
+        // Clear session
+        session()->forget(['otp_sent', 'email']);
+
+        return redirect()->back()->with('success', 'Account has been deleted.');
+    }
 
 
 
     public function admin(Request $request)
     {
-        try{
-        $validator = Validator::make($request->all(),[
-            'email' => 'required|email|exists:users',
-            'password'=>'required'
-        ]);
-        if($validator->fails())
-        {
-            return redirect()->back()->with(['error'=>$validator->errors()->first()]);
+        try {
+            $validator = Validator::make($request->all(), [
+                'email' => 'required|email|exists:users',
+                'password' => 'required'
+            ]);
+            if ($validator->fails()) {
+                return redirect()->back()->with(['error' => $validator->errors()->first()]);
 
+            }
+            if (Auth::attempt(['email' => $request->email, 'password' => $request->password, 'role' => 'admin'])) {
+                return redirect()->route('dashboard');
+            } else {
+                return back()->with(['error' => 'Invalid Credentials']);
+            }
+        } catch (\Exception $e) {
+            return redirect()->back()->with(['error' => $e->getMessage()]);
         }
-        if(Auth::attempt(['email'=>$request->email,'password'=>$request->password,'role'=>'admin'])) {
-            return redirect()->route('dashboard');       
-        }else{
-            return back()->with(['error'=>'Invalid Credentials']);
-        }
-    }catch(\Exception $e){
-        return redirect()->back()->with(['error'=>$e->getMessage()]);
-    }
     }
 
     public function logout(Request $request)
