@@ -215,18 +215,6 @@ class ServiceController extends BaseController
         return $this->sendResponse([], 'Service deleted successfully.');
     }
 
-    // public function barber_booking_list(Request $request)
-    // {
-    //     if(isset($request->status))
-    //     {
-    //         $barberbooking = Booking::with('review','barber_info','booking_detail','booking_detail.service_info','member_info')->where('status',$request->status)->where('barber_id', Auth::user()->id)->get();
-    //     }
-    //     else
-    //     {
-    //         $barberbooking = Booking::with('review','barber_info','booking_detail','booking_detail.service_info','member_info')->where('barber_id', Auth::user()->id)->get();
-    //     }
-    //     return response()->json(['success'=>true,'barber_booking_list'=> $barberbooking],200);
-    // }
 
     public function barber_booking_list(Request $request)
     {
@@ -253,7 +241,45 @@ class ServiceController extends BaseController
         $barberbooking = $query->where('barber_id', Auth::user()->id)
             ->orderBy('created_at', 'desc')
             ->get();
+        $barberbooking = $barberbooking->map(function ($booking) {
+            $distance = null;
+
+            if (isset($booking->distance) && is_numeric($booking->distance)) {
+                $distance = round((float) $booking->distance * 0.621371, 2);
+            } elseif ($booking->barber_info && $booking->member_info) {
+                $distance = $this->calculateDistanceInMiles(
+                    $booking->barber_info->lat,
+                    $booking->barber_info->lng,
+                    $booking->member_info->lat,
+                    $booking->member_info->lng
+                );
+            }
+
+            $booking->distance = $distance;
+
+            return $booking;
+        });
         Log::info("Barber Booking List: " . json_encode($barberbooking));
         return response()->json(['success' => true, 'barber_booking_list' => $barberbooking], 200);
+    }
+
+    private function calculateDistanceInMiles($fromLat, $fromLng, $toLat, $toLng)
+    {
+        if ($fromLat === null || $fromLng === null || $toLat === null || $toLng === null) {
+            return null;
+        }
+
+        $fromLat = deg2rad((float) $fromLat);
+        $fromLng = deg2rad((float) $fromLng);
+        $toLat = deg2rad((float) $toLat);
+        $toLng = deg2rad((float) $toLng);
+
+        $angle = sin($fromLat) * sin($toLat) + cos($fromLat) * cos($toLat) * cos($toLng - $fromLng);
+        $angle = min(1, max(-1, $angle));
+
+        $distanceKm = 6371 * acos($angle);
+        $distanceMiles = $distanceKm * 0.621371;
+
+        return round($distanceMiles, 2);
     }
 }
